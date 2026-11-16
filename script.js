@@ -8,9 +8,12 @@ You help with skincare, haircare, makeup, fragrance, grooming, suncare, and the
 user's generated routine. When given a list of products, build a clear
 step-by-step routine (morning and evening if it makes sense), explain why each
 product is used, and give the order of use. Only use the products provided
-unless the user asks for suggestions. If a question is not related to beauty,
-personal care, or the user's routine, politely say you can only help with
-those topics. Keep answers clear and easy to read.`;
+unless the user asks for suggestions. Use web search when the user asks about
+current information, such as new products, availability, ingredients, reviews,
+or official L'Oréal brand details, and include links to your sources. If a
+question is not related to beauty, personal care, or the user's routine,
+politely say you can only help with those topics. Keep answers clear and easy
+to read.`;
 
 /* ---------- 2. DOM elements ---------- */
 const categoryFilter = document.getElementById("categoryFilter");
@@ -62,8 +65,8 @@ function displayProducts(products) {
              aria-pressed="${isSelected}">
           <img src="${product.image}" alt="${product.name}">
           <div class="product-info">
-            <h3>${product.name}</h3>
-            <p>${product.brand}</p>
+            <h3>${product.brand}</h3>
+            <p>${product.name}</p>
             <button class="desc-btn" data-desc-id="${product.id}" type="button">
               Details
             </button>
@@ -76,7 +79,6 @@ function displayProducts(products) {
     })
     .join("");
 }
-
 /* ---------- 6. Filter by category AND search text ---------- */
 function updateGrid() {
   const category = categoryFilter.value;
@@ -92,13 +94,20 @@ function updateGrid() {
     return;
   }
 
+  // Split the search into separate words, e.g. "cerave cleanser" -> ["cerave", "cleanser"]
+  const searchWords = searchText.split(/\s+/).filter(Boolean);
+
   const filtered = allProducts.filter((product) => {
     // Category matches if none chosen, or if it equals the chosen one
     const matchesCategory = !category || product.category === category;
-    // Search checks name, brand, and description
+
+    // Combine everything searchable into one lowercase string
     const text =
-      `${product.name} ${product.brand} ${product.description}`.toLowerCase();
-    const matchesSearch = !searchText || text.includes(searchText);
+      `${product.name} ${product.brand} ${product.category} ${product.description}`.toLowerCase();
+
+    // Every typed word must appear somewhere in that text
+    const matchesSearch = searchWords.every((word) => text.includes(word));
+
     return matchesCategory && matchesSearch;
   });
 
@@ -167,7 +176,11 @@ function updateSelectedList() {
     .map(
       (p) => `
       <div class="selected-item">
-        <span>${p.name}</span>
+        <img src="${p.image}" alt="${p.name}">
+        <div class="selected-text">
+          <strong>${p.brand}</strong>
+          <span>${p.name}</span>
+        </div>
         <button class="remove-btn" data-remove-id="${p.id}"
                 aria-label="Remove ${p.name}" type="button">
           <i class="fa-solid fa-xmark"></i>
@@ -203,24 +216,138 @@ function addMessage(role, text) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
   return div;
 }
+/* ---------- Turn the AI's Markdown into HTML ---------- */
+function formatMarkdown(text) {
+  // 1. Escape HTML first so nothing unsafe can sneak in
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // 2. Links: [text](https://...)
+  html = html.replace(
+    /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener">$1</a>',
+  );
+
+  // 3. Bold: **text**
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+  // 4. Italic: *text*
+  html = html.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+
+  // 5. Go line by line to build headings, lists, and paragraphs
+  const lines = html.split("\n");
+  let output = "";
+  let openList = null; // "ul", "ol", or null
+
+  // Helper that closes a list if one is open
+  function closeList() {
+    if (openList) {
+      output += `</${openList}>`;
+      openList = null;
+    }
+  }
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Blank line: skip it
+    if (trimmed === "") continue;
+
+    // Headings: # Title, ## Title, ### Title
+    const heading = trimmed.match(/^#{1,6}\s+(.*)$/);
+    if (heading) {
+      closeList();
+      output += `<h4>${heading[1]}</h4>`;
+      continue;
+    }
+
+    // Divider line: ---
+    if (/^-{3,}$/.test(trimmed)) {
+      closeList();
+      output += "<hr>";
+      continue;
+    }
+
+    // Numbered list: 1. item
+    const numbered = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    if (numbered) {
+      if (openList !== "ol") {
+        closeList();
+        output += "<ol>";
+        openList = "ol";
+      }
+      // value keeps the number correct even if the list gets interrupted
+      output += `<li value="${numbered[1]}">${numbered[2]}</li>`;
+      continue;
+    }
+
+    // Bullet list: - item or * item
+    const bullet = trimmed.match(/^[-*•]\s+(.*)$/);
+    if (bullet) {
+      if (openList !== "ul") {
+        closeList();
+        output += "<ul>";
+        openList = "ul";
+      }
+      output += `<li>${bullet[1]}</li>`;
+      continue;
+    }
+
+    // Anything else is a normal paragraph
+    closeList();
+    output += `<p>${trimmed}</p>`;
+  }
+
+  closeList();
+  return output;
+}
+
+/* ---------- Safely show text inside HTML ---------- */
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/* ---------- Build the "Sources" list from the web search ---------- */
+function formatSources(sources) {
+  // No sources means the AI didn't search, so show nothing
+  if (!sources || sources.length === 0) return "";
+
+  const links = sources
+    .map(
+      (s) =>
+        `<li><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title)}</a></li>`,
+    )
+    .join("");
+
+  return `<div class="sources"><strong>Sources</strong><ul>${links}</ul></div>`;
+}
 
 /* Send the whole conversation to the Cloudflare Worker */
 async function askAI() {
-  const thinking = addMessage("assistant", "Thinking…");
+  const thinking = addMessage("assistant", "Searching and thinking…");
 
   try {
     const response = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "gpt-4.1", messages: messages }),
+      body: JSON.stringify({ messages: messages }),
     });
 
     const data = await response.json();
-    const reply = data.choices[0].message.content;
+    const message = data.choices[0].message;
+    const reply = message.content;
 
     // Save the reply so the AI remembers it next time
     messages.push({ role: "assistant", content: reply });
-    thinking.textContent = reply;
+
+    // Show the formatted reply, then the source links underneath
+    thinking.innerHTML = formatMarkdown(reply) + formatSources(message.sources);
   } catch (error) {
     console.error(error);
     thinking.textContent =

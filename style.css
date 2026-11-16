@@ -253,3 +253,658 @@ body {
 .generate-btn i {
   margin-right: 8px;
 }
+
+/* ---------- site themes ---------- */
+:root {
+  --red: #ff003b;
+  --red-dark: #c8002e;
+  --gold: #e3a535;
+}
+
+body {
+  overflow-x: hidden; /* stops the full-width gray bars from adding a scrollbar */
+}
+
+.page-wrapper {
+  max-width: 1000px;
+}
+
+/* Header: light gray band that stretches across the whole screen */
+.site-header {
+  background: #f8f8f8;
+  box-shadow: 0 0 0 100vmax #f8f8f8;
+  clip-path: inset(0 -100vmax);
+  padding-bottom: 50px;
+}
+.site-title {
+  color: #333;
+  font-size: 32px;
+  font-weight: 700;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.rtl-btn {
+  margin-top: 10px;
+  border-color: #ccc;
+  background: #fff;
+  font-size: 12px;
+}
+
+/* Floating white search bar */
+.search-section {
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  margin: -30px 0 40px;
+  position: relative; /* sits on top of the gray header */
+  gap: 24px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.search-field,
+.filter-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #ddd;
+  padding: 8px 0;
+  color: #666;
+}
+.search-field {
+  flex: 1;
+}
+.filter-field {
+  flex: 0 0 auto;
+}
+.search-section input[type="search"],
+.search-section select {
+  border: none;
+  border-radius: 0;
+  padding: 6px 0;
+  font-size: 18px;
+  font-weight: 400;
+  background: transparent;
+  color: #333;
+  width: auto;
+  box-shadow: none;
+}
+.search-section input[type="search"] {
+  width: 100%;
+  flex: 1;
+}
+.search-section input[type="search"]:focus,
+.search-section select:focus {
+  outline: none;
+  box-shadow: none;
+}
+.search-field:focus-within,
+.filter-field:focus-within {
+  border-bottom-color: var(--red);
+}
+
+/* Product cards: square, thin black border, bold brand name */
+.product-card {
+  border: 1px solid #000;
+  border-radius: 0;
+  background: #fff;
+  padding: 20px;
+  min-height: 200px;
+  align-items: center;
+}
+.product-card:hover {
+  border-color: var(--red);
+  box-shadow: none;
+}
+.product-card.selected {
+  border: 2px solid var(--red);
+  background: #fff7f9;
+}
+.product-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 4px;
+}
+.product-card p {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #333;
+}
+.desc-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #333;
+  text-decoration: underline;
+}
+.desc-btn:hover {
+  background: none;
+  color: var(--red);
+}
+.description {
+  border-radius: 0;
+}
+
+/* Selected products: no box, left-aligned button */
+.selected-products {
+  border: none;
+  padding: 0;
+  margin: 50px 0;
+}
+.selected-products h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  border-inline-start: none;
+  padding-inline-start: 0;
+}
+.selected-item {
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 0;
+}
+.generate-btn {
+  width: auto;
+  padding: 16px 32px;
+  font-size: 16px;
+  border-radius: 0;
+  background: var(--red);
+}
+.generate-btn:hover {
+  background: var(--red-dark);
+}
+.clear-btn {
+  border-radius: 0;
+  margin-inline-end: 12px;
+  padding: 16px 24px;
+  font-size: 16px;
+}
+
+/* Chat: black frame, simple look */
+.chatbox {
+  border: 1px solid #000;
+  border-radius: 0;
+  padding: 40px;
+}
+.chatbox h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  border-inline-start: none;
+  padding-inline-start: 0;
+  margin-bottom: 10px;
+}
+.chat-subtitle {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+.chat-window {
+  background: transparent;
+  border: none;
+  padding: 0;
+  height: 300px;
+}
+.msg {
+  border-radius: 0;
+}
+.chat-form input {
+  border-bottom: 1px solid #ccc;
+}
+.chat-form input:focus {
+  border-bottom-color: var(--red);
+}
+.chat-form button {
+  background: #000;
+  border-radius: 0;
+  width: 56px;
+  height: 56px;
+}
+.chat-form button:hover {
+  background: var(--red);
+}
+
+/* Footer: full-width gray bar, text left and links right */
+.site-footer {
+  background: #f8f8f8;
+  box-shadow: 0 0 0 100vmax #f8f8f8;
+  clip-path: inset(0 -100vmax);
+  margin: 60px 0 0;
+  padding: 50px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 16px;
+  color: #333;
+}
+.site-footer nav {
+  margin-top: 0;
+}
+.site-footer a {
+  color: #000;
+}
+.site-footer a:hover {
+  color: var(--red);
+}
+
+/* Placeholder text */
+.placeholder-message {
+  color: #666;
+  font-weight: 400;
+}
+
+/* Mobile: stack the search bar */
+@media (max-width: 700px) {
+  .search-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .product-card {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---------- Rounded, modern corners + selected pictures ---------- */
+
+/* Round the main containers */
+.search-section {
+  border-radius: 20px;
+}
+.product-card {
+  border-radius: 16px;
+  overflow: hidden; /* keeps the description overlay inside the rounded corners */
+}
+.description {
+  border-radius: 16px;
+}
+.chatbox {
+  border-radius: 20px;
+}
+.chat-window {
+  border-radius: 12px;
+}
+.msg {
+  border-radius: 14px;
+}
+
+/* Round the buttons */
+.generate-btn,
+.clear-btn {
+  border-radius: 12px;
+}
+.chat-form button {
+  border-radius: 12px;
+}
+.rtl-btn {
+  border-radius: 20px;
+}
+
+/* Selected products: little cards with a picture */
+#selectedProductsList {
+  gap: 14px;
+}
+.selected-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 10px 12px;
+  width: calc(50% - 7px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.selected-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #fff;
+}
+.selected-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.selected-text strong {
+  font-size: 15px;
+}
+.selected-text span {
+  color: #555;
+}
+.remove-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: var(--red);
+  color: #fff;
+  cursor: pointer;
+}
+.remove-btn:hover {
+  background: var(--red-dark);
+}
+.empty-note {
+  color: #666;
+  font-size: 14px;
+}
+
+/* Formatted chat replies */
+.msg {
+  white-space: normal; /* the formatter handles the line breaks now */
+  line-height: 1.5;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  max-width: 90%;
+}
+.msg.user {
+  background: var(--red);
+  color: #fff;
+  margin-inline-start: auto;
+}
+.msg.assistant {
+  background: #fff;
+  border: 1px solid #ddd;
+}
+.msg p {
+  margin-bottom: 10px;
+}
+.msg p:last-child {
+  margin-bottom: 0;
+}
+.msg h4 {
+  margin: 14px 0 6px;
+  color: var(--red);
+  font-size: 17px;
+}
+.msg h4:first-child {
+  margin-top: 0;
+}
+.msg ul,
+.msg ol {
+  margin: 6px 0 10px;
+  padding-inline-start: 24px;
+}
+.msg li {
+  margin-bottom: 6px;
+}
+.msg a {
+  color: var(--red);
+  text-decoration: underline;
+}
+.msg hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 12px 0;
+}
+
+/* Misc buttons */
+.clear-btn {
+  background: none;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+.clear-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+.generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.product-card {
+  position: relative;
+  cursor: pointer;
+}
+.product-card:focus-visible {
+  outline: 3px solid var(--gold);
+}
+
+/* Selected items stack on small screens */
+@media (max-width: 700px) {
+  .selected-item {
+    width: 100%;
+  }
+}
+
+/* ---------- Fix: hide descriptions until "Details" is clicked ---------- */
+.description {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 20px 20px 50px; /* extra space at the bottom for the Details button */
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: start;
+  overflow-y: auto;
+  border-radius: 16px;
+}
+.product-card.show-desc .description {
+  display: block;
+}
+/* While the description is open, the Details button sits at the bottom */
+.product-card.show-desc .desc-btn {
+  position: absolute;
+  bottom: 14px;
+  inset-inline-start: 20px;
+  z-index: 2;
+  margin: 0;
+}
+
+/* ---------- Responsive cards: 2 columns, then 1 ---------- */
+@media (max-width: 900px) {
+  .product-card {
+    flex: 1 1 calc(50% - 10px);
+    flex-direction: column; /* picture on top, text below */
+    align-items: center;
+    text-align: center;
+    min-height: 0;
+  }
+  .product-card img {
+    width: 140px;
+    height: 140px;
+  }
+  .product-card .product-info {
+    flex: none;
+    width: 100%;
+    align-items: center;
+    min-height: 0;
+  }
+  .desc-btn {
+    align-self: center;
+  }
+  .product-card.show-desc .desc-btn {
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+  }
+  [dir="rtl"] .product-card.show-desc .desc-btn {
+    transform: translateX(50%);
+  }
+}
+
+@media (max-width: 600px) {
+  .product-card {
+    flex: 1 1 100%; /* one card per row on phones */
+  }
+}
+
+/* RTL fixes */
+[dir="rtl"] .generate-btn i {
+  margin-right: 0;
+  margin-left: 8px;
+}
+[dir="rtl"] .chat-form button i {
+  transform: scaleX(-1); /* flip the send arrow */
+}
+/* ---------- More gold, less red (paste at the very bottom) ---------- */
+:root {
+  --gold: #e3a535;
+  --gold-dark: #b07d12; /* darker gold for text so it stays readable */
+  --gold-light: #fdf4e0; /* soft gold tint for backgrounds */
+}
+
+/* Header: gold underline under the title */
+.site-title {
+  display: inline-block;
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--gold);
+}
+
+/* Search bar: gold focus line */
+.search-field:focus-within,
+.filter-field:focus-within {
+  border-bottom-color: var(--gold);
+}
+.search-field i,
+.filter-field i {
+  color: var(--gold);
+}
+
+/* Product cards: gold hover and gold selected state */
+.product-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 4px 14px rgba(227, 165, 53, 0.25);
+}
+.product-card.selected {
+  border: 2px solid var(--gold);
+  background: var(--gold-light);
+  box-shadow: 0 0 0 3px rgba(227, 165, 53, 0.2);
+}
+.product-card:focus-visible {
+  outline-color: var(--gold);
+}
+.desc-btn:hover {
+  color: var(--gold-dark);
+}
+
+/* Section headings: gold accent bar */
+.selected-products h2,
+.chatbox h2 {
+  border-inline-start: 5px solid var(--gold);
+  padding-inline-start: 12px;
+}
+
+/* Selected items: gold border and gold remove button */
+.selected-item {
+  border: 1px solid var(--gold);
+  background: #fff;
+}
+.remove-btn {
+  background: var(--gold);
+}
+.remove-btn:hover {
+  background: var(--gold-dark);
+}
+.clear-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+}
+
+/* Chat: gold frame and gold message bubbles */
+.chatbox {
+  border: 1px solid var(--gold);
+}
+.msg.user {
+  background: var(--gold);
+  color: #222; /* dark text, because white on gold is hard to read */
+}
+.msg.assistant {
+  border: 1px solid var(--gold-light);
+  background: #fffdf8;
+}
+.msg h4 {
+  color: var(--gold-dark);
+}
+.msg a {
+  color: var(--gold-dark);
+}
+.chat-form input:focus {
+  border-bottom-color: var(--gold);
+}
+.chat-form button {
+  background: var(--gold);
+  color: #222;
+}
+.chat-form button:hover {
+  background: var(--gold-dark);
+  color: #fff;
+}
+
+/* RTL toggle */
+.rtl-btn:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #222;
+}
+
+/* Footer links */
+.site-footer a:hover {
+  color: var(--gold-dark);
+}
+/* ---------- Fix: stack and center the header ---------- */
+.site-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 15px;
+}
+
+.site-title {
+  display: block;
+  width: fit-content; /* underline only as wide as the text */
+  max-width: 100%;
+  margin: 0 auto 14px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--gold);
+}
+
+.rtl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 auto;
+  padding: 6px 14px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background: #fff;
+  color: #333;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+/* ---------- Web search sources ---------- */
+.sources {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--gold);
+  font-size: 13px;
+}
+.sources ul {
+  margin: 6px 0 0;
+  padding-inline-start: 20px;
+}
+.sources li {
+  margin-bottom: 4px;
+  overflow-wrap: anywhere; /* long links won't break the layout */
+}
+.sources a {
+  color: var(--gold-dark, #b07d12);
+  text-decoration: underline;
+}
