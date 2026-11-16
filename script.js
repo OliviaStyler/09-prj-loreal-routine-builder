@@ -1,57 +1,298 @@
-/* Get references to DOM elements */
+/* ---------- 1. Settings ---------- */
+// Paste your Cloudflare Worker URL here (no API key needed!)
+const WORKER_URL = "https://loreal-worker.u1489117.workers.dev/";
+
+// The system prompt tells the AI who it is and what it may talk about
+const SYSTEM_PROMPT = `You are a friendly L'Oréal beauty advisor.
+You help with skincare, haircare, makeup, fragrance, grooming, suncare, and the
+user's generated routine. When given a list of products, build a clear
+step-by-step routine (morning and evening if it makes sense), explain why each
+product is used, and give the order of use. Only use the products provided
+unless the user asks for suggestions. If a question is not related to beauty,
+personal care, or the user's routine, politely say you can only help with
+those topics. Keep answers clear and easy to read.`;
+
+/* ---------- 2. DOM elements ---------- */
 const categoryFilter = document.getElementById("categoryFilter");
+const productSearch = document.getElementById("productSearch");
 const productsContainer = document.getElementById("productsContainer");
+const selectedProductsList = document.getElementById("selectedProductsList");
+const generateBtn = document.getElementById("generateRoutine");
+const clearAllBtn = document.getElementById("clearAll");
+const rtlToggle = document.getElementById("rtlToggle");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
+const userInput = document.getElementById("userInput");
 
-/* Show initial placeholder until user selects a category */
-productsContainer.innerHTML = `
-  <div class="placeholder-message">
-    Select a category to view products
-  </div>
-`;
+/* ---------- 3. App state ---------- */
+let allProducts = []; // every product from products.json
+let selectedIds = []; // ids of selected products (saved in localStorage)
+const messages = [{ role: "system", content: SYSTEM_PROMPT }]; // full chat history
 
-/* Load product data from JSON file */
+// Load saved selections from localStorage (if any)
+try {
+  selectedIds = JSON.parse(localStorage.getItem("selectedIds")) || [];
+} catch (error) {
+  selectedIds = [];
+}
+
+/* ---------- 4. Load products ---------- */
 async function loadProducts() {
   const response = await fetch("products.json");
   const data = await response.json();
   return data.products;
 }
 
-/* Create HTML for displaying product cards */
+/* ---------- 5. Show products in the grid ---------- */
 function displayProducts(products) {
+  if (products.length === 0) {
+    productsContainer.innerHTML = `
+      <div class="placeholder-message">No products found</div>
+    `;
+    return;
+  }
+
   productsContainer.innerHTML = products
-    .map(
-      (product) => `
-    <div class="product-card">
-      <img src="${product.image}" alt="${product.name}">
-      <div class="product-info">
-        <h3>${product.name}</h3>
-        <p>${product.brand}</p>
+    .map((product) => {
+      // Add the "selected" class if this product is selected
+      const isSelected = selectedIds.includes(product.id);
+      return `
+        <div class="product-card ${isSelected ? "selected" : ""}"
+             data-id="${product.id}" tabindex="0" role="button"
+             aria-pressed="${isSelected}">
+          <img src="${product.image}" alt="${product.name}">
+          <div class="product-info">
+            <h3>${product.name}</h3>
+            <p>${product.brand}</p>
+            <button class="desc-btn" data-desc-id="${product.id}" type="button">
+              Details
+            </button>
+          </div>
+          <div class="description" id="desc-${product.id}">
+            ${product.description}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+/* ---------- 6. Filter by category AND search text ---------- */
+function updateGrid() {
+  const category = categoryFilter.value;
+  const searchText = productSearch.value.trim().toLowerCase();
+
+  // Show the placeholder until the user picks a category or types a search
+  if (!category && !searchText) {
+    productsContainer.innerHTML = `
+      <div class="placeholder-message">
+        Select a category or search to view products
       </div>
-    </div>
-  `
+    `;
+    return;
+  }
+
+  const filtered = allProducts.filter((product) => {
+    // Category matches if none chosen, or if it equals the chosen one
+    const matchesCategory = !category || product.category === category;
+    // Search checks name, brand, and description
+    const text =
+      `${product.name} ${product.brand} ${product.description}`.toLowerCase();
+    const matchesSearch = !searchText || text.includes(searchText);
+    return matchesCategory && matchesSearch;
+  });
+
+  displayProducts(filtered);
+}
+
+categoryFilter.addEventListener("change", updateGrid);
+productSearch.addEventListener("input", updateGrid);
+
+/* ---------- 7. Select / unselect products ---------- */
+function toggleProduct(id) {
+  if (selectedIds.includes(id)) {
+    // Remove it
+    selectedIds = selectedIds.filter((savedId) => savedId !== id);
+  } else {
+    // Add it
+    selectedIds.push(id);
+  }
+  saveSelections();
+  updateSelectedList();
+  updateGrid(); // refresh so the highlight updates
+}
+
+function saveSelections() {
+  localStorage.setItem("selectedIds", JSON.stringify(selectedIds));
+}
+
+/* One click listener for the whole grid (event delegation) */
+productsContainer.addEventListener("click", (e) => {
+  // Details button: show/hide the description only
+  const descBtn = e.target.closest(".desc-btn");
+  if (descBtn) {
+    const card = descBtn.closest(".product-card");
+    card.classList.toggle("show-desc");
+    return;
+  }
+
+  // Otherwise, a click on the card toggles selection
+  const card = e.target.closest(".product-card");
+  if (card) {
+    toggleProduct(Number(card.dataset.id));
+  }
+});
+
+/* Keyboard support: Enter or Space selects a focused card */
+productsContainer.addEventListener("keydown", (e) => {
+  const card = e.target.closest(".product-card");
+  if (card && e.target === card && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault();
+    toggleProduct(Number(card.dataset.id));
+  }
+});
+
+/* ---------- 8. Selected products list ---------- */
+function updateSelectedList() {
+  const selectedProducts = allProducts.filter((p) =>
+    selectedIds.includes(p.id),
+  );
+
+  if (selectedProducts.length === 0) {
+    selectedProductsList.innerHTML = `<p class="empty-note">No products selected yet.</p>`;
+    return;
+  }
+
+  selectedProductsList.innerHTML = selectedProducts
+    .map(
+      (p) => `
+      <div class="selected-item">
+        <span>${p.name}</span>
+        <button class="remove-btn" data-remove-id="${p.id}"
+                aria-label="Remove ${p.name}" type="button">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    `,
     )
     .join("");
 }
 
-/* Filter and display products when category changes */
-categoryFilter.addEventListener("change", async (e) => {
-  const products = await loadProducts();
-  const selectedCategory = e.target.value;
+/* Remove a single item from the selected list */
+selectedProductsList.addEventListener("click", (e) => {
+  const btn = e.target.closest(".remove-btn");
+  if (btn) {
+    toggleProduct(Number(btn.dataset.removeId));
+  }
+});
 
-  /* filter() creates a new array containing only products 
-     where the category matches what the user selected */
-  const filteredProducts = products.filter(
-    (product) => product.category === selectedCategory
+/* Clear all selections */
+clearAllBtn.addEventListener("click", () => {
+  selectedIds = [];
+  saveSelections();
+  updateSelectedList();
+  updateGrid();
+});
+
+/* ---------- 9. Chat helpers ---------- */
+function addMessage(role, text) {
+  const div = document.createElement("div");
+  div.className = `msg ${role}`;
+  div.textContent = text; // textContent is safer than innerHTML
+  chatWindow.appendChild(div);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  return div;
+}
+
+/* Send the whole conversation to the Cloudflare Worker */
+async function askAI() {
+  const thinking = addMessage("assistant", "Thinking…");
+
+  try {
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "gpt-4.1", messages: messages }),
+    });
+
+    const data = await response.json();
+    const reply = data.choices[0].message.content;
+
+    // Save the reply so the AI remembers it next time
+    messages.push({ role: "assistant", content: reply });
+    thinking.textContent = reply;
+  } catch (error) {
+    console.error(error);
+    thinking.textContent =
+      "Sorry, something went wrong. Please try again in a moment.";
+    // Remove the failed user message so history stays clean
+    messages.pop();
+  }
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+/* ---------- 10. Generate Routine ---------- */
+generateBtn.addEventListener("click", async () => {
+  const selectedProducts = allProducts.filter((p) =>
+    selectedIds.includes(p.id),
   );
 
-  displayProducts(filteredProducts);
+  if (selectedProducts.length === 0) {
+    addMessage("assistant", "Please select at least one product first.");
+    return;
+  }
+
+  // Send only the fields the AI needs
+  const productData = selectedProducts.map((p) => ({
+    name: p.name,
+    brand: p.brand,
+    category: p.category,
+    description: p.description,
+  }));
+
+  const prompt = `Please build a personalized routine using these products:\n${JSON.stringify(
+    productData,
+    null,
+    2,
+  )}`;
+
+  addMessage("user", "Generate a routine with my selected products.");
+  messages.push({ role: "user", content: prompt });
+  generateBtn.disabled = true;
+  await askAI();
+  generateBtn.disabled = false;
 });
 
-/* Chat form submission handler - placeholder for OpenAI integration */
-chatForm.addEventListener("submit", (e) => {
+/* ---------- 11. Follow-up questions ---------- */
+chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  chatWindow.innerHTML = "Connect to the OpenAI API for a response!";
+  const text = userInput.value.trim();
+  if (!text) return;
+
+  addMessage("user", text);
+  messages.push({ role: "user", content: text });
+  userInput.value = "";
+
+  await askAI();
 });
+
+/* ---------- 12. RTL support ---------- */
+function setDirection(dir) {
+  document.documentElement.dir = dir;
+  localStorage.setItem("direction", dir);
+}
+
+rtlToggle.addEventListener("click", () => {
+  setDirection(document.documentElement.dir === "rtl" ? "ltr" : "rtl");
+});
+
+/* ---------- 13. Start the app ---------- */
+async function init() {
+  setDirection(localStorage.getItem("direction") || "ltr");
+  allProducts = await loadProducts();
+  updateSelectedList();
+  updateGrid();
+}
+
+init();
